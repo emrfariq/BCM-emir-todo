@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block title %}{{ code }} · Ada kendala{% endblock %}
+{% block content %}<section class="panel error-page"><span class="error-code">{{ code }}</span><h1>{{ 'Database belum terhubung' if code == 503 else 'Ada yang perlu diperiksa' }}</h1><p>{{ message }}</p><a class="button primary" href="{{ url_for('index') }}">Kembali ke daftar tugas</a>{% if code == 503 %}<p class="help-text">Lokal: pastikan MySQL XAMPP aktif dan jalankan init_db.py. Online: periksa environment variables dan layanan database.</p>{% endif %}</section>{% endblock %}

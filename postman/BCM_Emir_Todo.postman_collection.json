@@ -1,0 +1,183 @@
+{
+  "info": {
+    "name": "BCM Emir Todo — Alur tugas harian",
+    "_postman_id": "876b31aa-9bed-45d0-951a-f00a7f836ccb",
+    "description": "Jalankan seluruh collection berurutan. Ganti base_url untuk lokal atau Vercel, tanpa slash terakhir. Nama request diawali status yang diharapkan. Collection membuat satu tugas uji dan membersihkannya di akhir. Response time hanya dicatat, tidak ada SLA dari soal.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "base_url", "value": "http://127.0.0.1:5000"},
+    {"key": "task_id", "value": ""},
+    {"key": "officer_id", "value": "null"},
+    {"key": "test_title", "value": ""},
+    {"key": "due_date", "value": ""}
+  ],
+  "event": [
+    {"listen": "prerequest", "script": {"type": "text/javascript", "exec": [
+      "if (pm.info.requestName.startsWith('201')) {",
+      "  pm.collectionVariables.set('test_title', 'Postman - tugas uji ' + Date.now());",
+      "  pm.collectionVariables.set('due_date', new Date(Date.now() + 7 * 3600000).toISOString().slice(0, 10));",
+      "  pm.collectionVariables.set('task_id', '');",
+      "}"
+    ]}},
+    {"listen": "test", "script": {"type": "text/javascript", "exec": [
+      "const expected = Number(pm.info.requestName.substring(0, 3));",
+      "pm.test('HTTP status sesuai skenario: ' + expected, () => pm.response.to.have.status(expected));",
+      "if (pm.response.code === 204) {",
+      "  pm.test('204 memiliki body kosong', () => pm.expect(pm.response.text()).to.eql(''));",
+      "} else {",
+      "  pm.test('Content-Type JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+      "  const body = pm.response.json();",
+      "  if (expected < 400) {",
+      "    pm.test('Respons sukses memiliki data', () => pm.expect(body).to.have.property('data'));",
+      "  } else {",
+      "    pm.test('Respons error informatif', () => {",
+      "      pm.expect(body.error.code).to.be.a('string');",
+      "      pm.expect(body.error.message).to.be.a('string').and.not.empty;",
+      "    });",
+      "  }",
+      "}",
+      "pm.test('Tidak ada stack trace', () => pm.expect(pm.response.text()).not.to.include('Traceback (most recent call last)'));",
+      "console.log('Response time (observasi): ' + pm.response.responseTime + ' ms');"
+    ]}}
+  ],
+  "item": [
+    {
+      "name": "200 | Lihat pilihan petugas",
+      "request": {"method": "GET", "url": "{{base_url}}/api/officers"},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "const officersData = pm.response.json().data;",
+        "pm.test('Daftar petugas berupa array', () => pm.expect(officersData).to.be.an('array'));",
+        "pm.collectionVariables.set('officer_id', officersData.length ? String(officersData[0].id) : 'null');"
+      ]}}]
+    },
+    {
+      "name": "201 | Buat tugas uji",
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks", "body": {"mode": "raw", "raw": "{\n  \"title\": \"{{test_title}}\",\n  \"description\": \"Data uji collection, akan dihapus di akhir.\",\n  \"due_date\": \"{{due_date}}\",\n  \"priority\": \"high\",\n  \"officer_id\": {{officer_id}}\n}", "options": {"raw": {"language": "json"}}}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "const task = pm.response.json().data;",
+        "pm.collectionVariables.set('task_id', String(task.id));",
+        "pm.test('Location menunjuk ID baru', () => pm.expect(pm.response.headers.get('Location')).to.include('/api/tasks/' + task.id));",
+        "pm.test('Field wajib dan nilai sesuai request', () => {",
+        "  pm.expect(task.id).to.be.a('number').and.above(0);",
+        "  pm.expect(task.title).to.eql(pm.collectionVariables.get('test_title'));",
+        "  pm.expect(task.due_date).to.eql(pm.collectionVariables.get('due_date'));",
+        "  pm.expect(task.status).to.eql('pending');",
+        "  pm.expect(task.priority).to.eql('high');",
+        "  pm.expect(task.is_overdue).to.be.a('boolean');",
+        "  pm.expect(task.archived_at).to.eql(null);",
+        "  pm.expect(task.created_at).to.match(/Z$/);",
+        "});"
+      ]}}]
+    },
+    {
+      "name": "200 | Verifikasi data tersimpan",
+      "request": {"method": "GET", "url": "{{base_url}}/api/tasks/{{task_id}}"},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('Judul dari GET sama dengan create', () => pm.expect(pm.response.json().data.title).to.eql(pm.collectionVariables.get('test_title')));"
+      ]}}]
+    },
+    {
+      "name": "200 | Ubah detail dan selesaikan",
+      "request": {"method": "PATCH", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks/{{task_id}}", "body": {"mode": "raw", "raw": "{\"status\":\"done\",\"description\":null,\"priority\":\"low\"}", "options": {"raw": {"language": "json"}}}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('PATCH mengubah field yang dikirim', () => { const t = pm.response.json().data; pm.expect(t.status).to.eql('done'); pm.expect(t.priority).to.eql('low'); pm.expect(t.description).to.eql(null); pm.expect(t.title).to.eql(pm.collectionVariables.get('test_title')); });"
+      ]}}]
+    },
+    {
+      "name": "200 | Verifikasi daftar selesai dan pencarian",
+      "request": {"method": "GET", "url": "{{base_url}}/api/tasks?view=completed&q={{test_title}}"},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('Tugas masuk daftar Selesai', () => { const rows = pm.response.json().data; pm.expect(rows).to.be.an('array'); pm.expect(rows.some(t => t.id === Number(pm.collectionVariables.get('task_id')) && t.status === 'done')).to.eql(true); });"
+      ]}}]
+    },
+    {
+      "name": "200 | Buka kembali menjadi Progres",
+      "request": {"method": "PATCH", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks/{{task_id}}", "body": {"mode": "raw", "raw": "{\"status\":\"in_progress\"}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('Tugas dapat dibuka kembali', () => pm.expect(pm.response.json().data.status).to.eql('in_progress'));"
+      ]}}]
+    },
+    {
+      "name": "409 | Tolak hapus sebelum arsip",
+      "request": {"method": "DELETE", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks/{{task_id}}"}
+    },
+    {
+      "name": "422 | Tolak judul kosong",
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks", "body": {"mode": "raw", "raw": "{\"title\":\"   \",\"due_date\":\"{{due_date}}\"}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": ["pm.test('Error menunjukkan field title', () => pm.expect(pm.response.json().error.fields).to.have.property('title'));"]}}]
+    },
+    {
+      "name": "422 | Tolak tenggat kosong",
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks", "body": {"mode": "raw", "raw": "{\"title\":\"Tidak boleh tersimpan\",\"due_date\":null}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": ["pm.test('Error menunjukkan field due_date', () => pm.expect(pm.response.json().error.fields).to.have.property('due_date'));"]}}]
+    },
+    {
+      "name": "422 | Tolak tanggal tidak valid",
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks", "body": {"mode": "raw", "raw": "{\"title\":\"Tidak boleh tersimpan\",\"due_date\":\"2026-02-30\"}"}}
+    },
+    {
+      "name": "422 | Tolak status dan prioritas tidak valid",
+      "request": {"method": "PATCH", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks/{{task_id}}", "body": {"mode": "raw", "raw": "{\"status\":\"unknown\",\"priority\":\"urgent\"}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": ["pm.test('Rincian status dan priority tersedia', () => { const fields = pm.response.json().error.fields; pm.expect(fields).to.have.property('status'); pm.expect(fields).to.have.property('priority'); });"]}}]
+    },
+    {
+      "name": "422 | Tolak petugas tidak ada",
+      "request": {"method": "PATCH", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks/{{task_id}}", "body": {"mode": "raw", "raw": "{\"officer_id\":4294967295}"}}
+    },
+    {
+      "name": "422 | Tolak PATCH kosong",
+      "request": {"method": "PATCH", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks/{{task_id}}", "body": {"mode": "raw", "raw": "{}"}}
+    },
+    {
+      "name": "400 | Tolak JSON rusak",
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks", "body": {"mode": "raw", "raw": "{broken"}}
+    },
+    {
+      "name": "415 | Tolak media type salah",
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "text/plain"}], "url": "{{base_url}}/api/tasks", "body": {"mode": "raw", "raw": "{}"}}
+    },
+    {
+      "name": "400 | Tolak filter tidak valid",
+      "request": {"method": "GET", "url": "{{base_url}}/api/tasks?status=unknown"}
+    },
+    {
+      "name": "200 | Verifikasi gagal validasi tidak mengubah tugas",
+      "request": {"method": "GET", "url": "{{base_url}}/api/tasks/{{task_id}}"},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('Data tetap utuh setelah request invalid', () => { const t = pm.response.json().data; pm.expect(t.status).to.eql('in_progress'); pm.expect(t.priority).to.eql('low'); pm.expect(t.title).to.eql(pm.collectionVariables.get('test_title')); });"
+      ]}}]
+    },
+    {
+      "name": "200 | Arsipkan tugas",
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks/{{task_id}}/archive"},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": ["pm.test('Timestamp arsip terisi', () => pm.expect(pm.response.json().data.archived_at).to.be.a('string'));"]}}]
+    },
+    {
+      "name": "200 | Verifikasi daftar arsip",
+      "request": {"method": "GET", "url": "{{base_url}}/api/tasks?view=archived&q={{test_title}}"},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": ["pm.test('Tugas ada di Arsip', () => pm.expect(pm.response.json().data.some(t => t.id === Number(pm.collectionVariables.get('task_id')))).to.eql(true));"]}}]
+    },
+    {
+      "name": "409 | Tolak edit tugas arsip",
+      "request": {"method": "PATCH", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks/{{task_id}}", "body": {"mode": "raw", "raw": "{\"title\":\"Tidak boleh berubah\"}"}}
+    },
+    {
+      "name": "200 | Pulihkan tugas",
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks/{{task_id}}/restore"},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": ["pm.test('Pulih mempertahankan status dan prioritas', () => { const t = pm.response.json().data; pm.expect(t.archived_at).to.eql(null); pm.expect(t.status).to.eql('in_progress'); pm.expect(t.priority).to.eql('low'); });"]}}]
+    },
+    {
+      "name": "200 | Arsipkan ulang untuk pembersihan",
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks/{{task_id}}/archive"}
+    },
+    {
+      "name": "204 | Hapus permanen tugas uji",
+      "request": {"method": "DELETE", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{base_url}}/api/tasks/{{task_id}}"}
+    },
+    {
+      "name": "404 | Pastikan tugas sudah terhapus",
+      "request": {"method": "GET", "url": "{{base_url}}/api/tasks/{{task_id}}"}
+    }
+  ]
+}

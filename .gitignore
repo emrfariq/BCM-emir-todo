@@ -1,0 +1,16 @@
+/dev-plan/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+!.env.hosting.example
+.vercel/
+.serena/
+.pytest_cache/
+.coverage
+*.log
+/certs/
+.DS_Store

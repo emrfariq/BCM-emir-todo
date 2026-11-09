@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#b71937">
+  <title>{% block title %}BCM Emir Todo{% endblock %} · Tugas harian</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Langsung ke konten</a>
+  <aside class="sidebar">
+    <a class="brand" href="{{ url_for('index') }}"><span class="brand-icon">✓</span><span>BCM<span class="brand-light"> Emir Todo</span><small>Ruang kerja harian</small></span></a>
+    <div class="nav-label">RUANG KERJA</div>
+    <nav aria-label="Navigasi utama">
+      {% set current_view = filters.view if filters is defined else '' %}
+      {% for key, label in views.items() %}
+      <a class="nav-item {{ 'selected' if current_view == key }}" href="{{ url_for('index', view=key) }}" {% if current_view == key %}aria-current="page"{% endif %}>
+        <span class="nav-symbol">{{ {'active':'▤','completed':'✓','archived':'▣'}[key] }}</span>{{ label }}
+        {% if counts is defined %}<span class="nav-count">{{ counts[key] }}</span>{% endif %}
+      </a>
+      {% endfor %}
+      <a class="nav-item {{ 'selected' if request.endpoint in ['officer_list','edit_officer'] }}" href="{{ url_for('officer_list') }}"><span class="nav-symbol">♧</span>Petugas</a>
+    </nav>
+    <div class="sidebar-note"><span class="live-dot"></span>Demo daftar bersama<p>Catat, kerjakan, dan selesaikan satu per satu.</p></div>
+    <div class="profile"><span class="avatar">EM</span><div><strong>Emir Muhammad Al-Fariq</strong><small>BCM Developer Intern · Demo</small></div></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><span>Workspace <span class="breadcrumb">/ &nbsp; {% block breadcrumb %}Tugas harian{% endblock %}</span></span><span class="date-chip">{{ today|tanggal }} <span class="desktop-only">· WIB</span></span></header>
+    <main id="main" tabindex="-1">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}<div class="notice {{ category }}" role="status"><span>✓ &nbsp; {{ message }}</span><button type="button" class="dismiss-notice" aria-label="Tutup notifikasi">×</button></div>{% endfor %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+      <footer>BCM Emir Todo <span>Modul sederhana, pekerjaan lebih tertata.</span></footer>
+    </main>
+  </div>
+</body>
+</html>
