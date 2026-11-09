@@ -24,8 +24,7 @@
       {% endfor %}
       <a class="nav-item {{ 'selected' if request.endpoint in ['officer_list','edit_officer'] }}" href="{{ url_for('officer_list') }}"><span class="nav-symbol">♧</span>Petugas</a>
     </nav>
-    <div class="sidebar-note"><span class="live-dot"></span>Demo daftar bersama<p>Catat, kerjakan, dan selesaikan satu per satu.</p></div>
-    <div class="profile"><span class="avatar">EM</span><div><strong>Emir Muhammad Al-Fariq</strong><small>BCM Developer Intern · Demo</small></div></div>
+    <div class="profile"><span class="avatar">EM</span><div><strong>Emir Muhammad Al-Fariq</strong><small>Administrator</small></div></div>
   </aside>
   <div class="workspace">
     <header class="topbar"><span>Workspace <span class="breadcrumb">/ &nbsp; {% block breadcrumb %}Tugas harian{% endblock %}</span></span><span class="date-chip">{{ today|tanggal }} <span class="desktop-only">· WIB</span></span></header>

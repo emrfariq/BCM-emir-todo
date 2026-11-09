@@ -62,6 +62,16 @@ Jika root XAMPP memakai password, isi `DB_PASSWORD` sesuai konfigurasi lokal. Bu
 
 3. Buka **http://127.0.0.1:5000**. Hentikan server dengan `Ctrl+C`.
 
+### Cara cepat untuk menjalankan kembali / demo interview
+
+Setelah instalasi dan database siap, nyalakan MySQL XAMPP lalu **klik dua kali `run.bat`** di folder project. Bisa juga dari terminal root project:
+
+```powershell
+.\run.bat
+```
+
+Script memilih konfigurasi lokal `.env` dan interpreter Python `.venv` secara otomatis. Buka **http://127.0.0.1:5000** dan biarkan jendela server tetap terbuka selama demo. Hentikan dengan `Ctrl+C`.
+
 `--create-database` membuat database lokal jika belum tersedia. `--seed` menambahkan 3 petugas dan 7 tugas hanya jika kedua tabel kosong. Script tidak menghapus data yang sudah ada dan tidak dijalankan otomatis saat startup.
 
 **Alternatif phpMyAdmin:** buat database `bcm_emir_todo` dengan collation `utf8mb4_unicode_ci`, pilih database tersebut, lalu impor `database/schema.sql`. Untuk data contoh, jalankan `init_db.py --seed` tanpa `--create-database`.
