@@ -42,9 +42,10 @@ def create_app(test_config=None):
 
     @app.context_processor
     def template_globals():
+        now = datetime.now(JAKARTA)
         return dict(csrf_token=csrf_token, statuses=STATUSES, priorities=PRIORITIES,
                     views=VIEWS, due_filters=DUE_FILTERS, is_overdue=is_overdue,
-                    today=today(), current_year=today().year)
+                    today=now.date(), current_year=now.year, header_time=now.strftime("%H:%M"))
 
     @app.template_filter("tanggal")
     def format_date(value):

@@ -1,0 +1,9 @@
+<section data-modal-content data-modal-title="{{ 'Edit petugas' if editing_officer else 'Tambah petugas' }}">
+  {% if errors %}<div class="notice error" role="alert">Ada input yang perlu diperbaiki. Periksa pesan di bawah.</div>{% endif %}
+  <form method="post" action="{{ url_for('edit_officer', officer_id=officer.id) if editing_officer else url_for('officer_list') }}" class="stack-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field"><label for="name">Nama <span class="required">*</span></label><input id="name" name="name" required maxlength="100" autofocus value="{{ form.name or '' }}" placeholder="Nama lengkap" {% if errors.name %}aria-invalid="true"{% endif %}>{% if errors.name %}<small class="field-error">{{ errors.name }}</small>{% endif %}</div>
+    <div class="field"><label for="position">Jabatan <span class="optional">Opsional</span></label><input id="position" name="position" maxlength="100" value="{{ form.position or '' }}" placeholder="Contoh: Developer Intern">{% if errors.position %}<small class="field-error">{{ errors.position }}</small>{% endif %}</div>
+    <div class="form-actions"><a class="button secondary form-cancel" href="{{ url_for('officer_list') }}">Batal</a><button class="button primary" type="submit">{{ 'Simpan perubahan' if editing_officer else 'Simpan petugas' }} <span aria-hidden="true">→</span></button></div>
+  </form>
+</section>

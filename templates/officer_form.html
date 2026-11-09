@@ -2,5 +2,5 @@
 {% block title %}Edit petugas{% endblock %}
 {% block content %}
 <a class="back-link" href="{{ url_for('officer_list') }}">← Kembali ke petugas</a><section class="page-heading"><div><h1>Edit petugas<span class="heading-dot">.</span></h1><p>Perubahan nama juga tampil pada tugas yang ditugaskan kepadanya.</p></div></section>
-<section class="panel form-panel narrow"><form method="post" class="stack-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="field"><label for="name">Nama <span class="required">*</span></label><input id="name" name="name" required maxlength="100" value="{{ officer.name }}">{% if errors.name %}<small class="field-error">{{ errors.name }}</small>{% endif %}</div><div class="field"><label for="position">Jabatan <span class="optional">Opsional</span></label><input id="position" name="position" maxlength="100" value="{{ officer.position or '' }}">{% if errors.position %}<small class="field-error">{{ errors.position }}</small>{% endif %}</div><div class="form-actions"><a class="button secondary" href="{{ url_for('officer_list') }}">Batal</a><button class="button primary" type="submit">Simpan perubahan</button></div></form></section>
+<section class="panel form-panel narrow">{% with form=officer, editing_officer=true %}{% include '_officer_fields.html' %}{% endwith %}</section>
 {% endblock %}

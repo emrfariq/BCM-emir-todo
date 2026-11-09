@@ -27,14 +27,18 @@
     <div class="profile"><span class="avatar">EM</span><div><strong>Emir Muhammad Al-Fariq</strong><small>Administrator</small></div></div>
   </aside>
   <div class="workspace">
-    <header class="topbar"><span>Workspace <span class="breadcrumb">/ &nbsp; {% block breadcrumb %}Tugas harian{% endblock %}</span></span><span class="date-chip">{{ today|tanggal }} <span class="desktop-only">· WIB</span></span></header>
+    <header class="topbar"><span>Workspace <span class="breadcrumb">/ &nbsp; {% block breadcrumb %}Tugas harian{% endblock %}</span></span><span class="date-chip"><span data-header-date>{{ today|tanggal }}</span><span aria-hidden="true">·</span><time data-header-clock aria-label="Jam Jakarta">{{ header_time }}</time><span>WIB</span></span></header>
     <main id="main" tabindex="-1">
       {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}<div class="notice {{ category }}" role="status"><span>✓ &nbsp; {{ message }}</span><button type="button" class="dismiss-notice" aria-label="Tutup notifikasi">×</button></div>{% endfor %}
       {% endwith %}
       {% block content %}{% endblock %}
-      <footer>BCM Emir Todo <span>Modul sederhana, pekerjaan lebih tertata.</span></footer>
+      <footer>punya emir yah <span>@emrfariq_.</span></footer>
     </main>
   </div>
+  <dialog id="form-modal" class="form-modal" aria-labelledby="form-modal-title">
+    <div class="modal-heading"><h2 id="form-modal-title">Memuat form...</h2><button type="button" class="modal-close" aria-label="Tutup modal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="modal-body"></div>
+  </dialog>
 </body>
 </html>

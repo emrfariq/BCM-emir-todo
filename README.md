@@ -9,6 +9,8 @@ Modul web sederhana untuk mencatat dan mengelola tugas harian. Dibuat untuk tes 
 - Pencarian judul serta filter status, tenggat, dan petugas yang dapat dikombinasikan.
 - Halaman Tugas Aktif, Selesai, dan Arsip. Arsip dapat dipulihkan; hapus permanen hanya dari Arsip.
 - Kelola petugas; menghapus petugas tidak menghapus tugasnya.
+- Tambah/edit tugas dan petugas melalui modal berlatar blur; penanggung jawab bisa dicari dengan mengetik nama.
+- Tanggal dan jam Jakarta (`HH:mm WIB`) tampil pada header dan diperbarui otomatis.
 - REST API dan collection Postman berisi alur sukses serta input tidak valid.
 
 Demo memakai satu daftar bersama tanpa login. Petugas adalah daftar nama, bukan akun. Tugas tetap tersimpan saat hari berganti; judul boleh berulang. Perhitungan hari ini menggunakan **Asia/Jakarta**. Gunakan data contoh untuk demo publik.
@@ -78,12 +80,14 @@ Script memilih konfigurasi lokal `.env` dan interpreter Python `.venv` secara ot
 
 ## 2. Alur penggunaan singkat
 
-1. Pilih **Tambah tugas**, isi judul dan tenggat, lalu simpan. Prioritas default Sedang, status awal Belum dikerjakan.
+1. Pilih **Tambah tugas** untuk membuka modal, isi judul dan tenggat, lalu simpan. Prioritas default Sedang, status awal Belum dikerjakan. Pada penanggung jawab, ketik nama lalu pilih hasil pencarian; kosongkan untuk Belum ditugaskan.
 2. Muat ulang halaman untuk memastikan tugas tersimpan. Pilih nama **Emir** pada filter petugas jika ingin melihat tugas yang ditugaskan kepadanya.
 3. Edit detail atau ubah status dari dropdown pada baris tugas, lalu tekan tombol **↵** di samping dropdown untuk menyimpan.
 4. Tugas Selesai tampil pada halaman tersendiri dan dapat dibuka kembali.
 5. Pilih **Arsipkan**, lalu konfirmasi. Di Arsip, pilih **Pulihkan** atau **Hapus** permanen.
-6. Tambah/edit/hapus nama melalui **Petugas**. Tugas milik petugas yang dihapus menjadi Belum ditugaskan.
+6. Tambah/edit nama melalui modal pada halaman **Petugas**. Tugas milik petugas yang dihapus menjadi Belum ditugaskan.
+
+Modal ditutup melalui tombol **×** di pojok kanan atas; Escape dan klik latar tidak menutupnya. Jika validasi gagal, pesan dan input tetap ditampilkan dalam modal. Jam header menggunakan zona waktu **Asia/Jakarta** dan hanya menampilkan jam serta menit.
 
 Tenggat terdekat tampil lebih dahulu, lalu ID terbaru jika tanggal sama. Filter **Semua tenggat** berlaku pada halaman yang sedang dibuka, bukan seluruh halaman sekaligus. Ringkasan angka di atas daftar menunjukkan keseluruhan data dan tidak mengikuti filter. Prioritas hanya penanda, bukan pengurutan tambahan.
 
